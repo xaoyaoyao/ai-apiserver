@@ -19,13 +19,16 @@ type UserParams struct {
 
 func ProcessUserPosts(ctx *Context) {
 	var params UserParams
-	if err := BindPathParams(ctx.Request, endpoint.API_STSTEM_PATH+endpoint.USERS_POSTS_PATH, &params); err != nil {
-		HandleError(ctx.Writer, err)
+	if err := ctx.BindPathParams(endpoint.API_STSTEM_PATH+endpoint.USERS_POSTS_PATH, &params); err != nil {
+		ctx.HandleError(err)
 		return
 	}
+	debug := ctx.Query("debug")
+
 	data := make(map[string]interface{})
 	data["id"] = params.ID
 	data["page"] = params.Page
 	data["username"] = "demo"
+	data["debug"] = debug
 	ctx.makeOK(data)
 }

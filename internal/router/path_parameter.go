@@ -20,14 +20,14 @@ import (
 )
 
 // 绑定路径参数到结构体
-func BindPathParams(r *http.Request, pattern string, dest interface{}) error {
+func (c *Context) BindPathParams(pattern string, dest interface{}) error {
 	// 1. 路径清理
-	cleanPath := strings.Split(r.URL.Path, "?")[0] // 移除查询参数
-	cleanPath = strings.Split(cleanPath, "#")[0]   // 移除锚点
-	cleanPath = strings.TrimRight(cleanPath, "/")  // 移除末尾斜杠
+	cleanPath := strings.Split(c.Request.URL.Path, "?")[0] // 移除查询参数
+	cleanPath = strings.Split(cleanPath, "#")[0]           // 移除锚点
+	cleanPath = strings.TrimRight(cleanPath, "/")          // 移除末尾斜杠
 
 	// 2. 编译正则表达式
-	re, paramNames, err := compilePattern(pattern)
+	re, paramNames, err := c.compilePattern(pattern)
 	if err != nil {
 		return fmt.Errorf("pattern compile failed: %w", err)
 	}
@@ -36,10 +36,10 @@ func BindPathParams(r *http.Request, pattern string, dest interface{}) error {
 	matches := re.FindStringSubmatch(cleanPath)
 	if matches == nil {
 		return &PathMismatchError{
-			URL:       r.URL.Path,
+			URL:       c.Request.URL.Path,
 			Pattern:   pattern,
 			CleanPath: cleanPath,
-			ParamMap:  buildParamMap(paramNames, matches),
+			ParamMap:  c.buildParamMap(paramNames, matches),
 		}
 	}
 
@@ -62,13 +62,13 @@ func BindPathParams(r *http.Request, pattern string, dest interface{}) error {
 		}
 
 		// 获取参数值
-		paramValue, exists := matchesMap(paramNames, matches, tag)
+		paramValue, exists := c.matchesMap(paramNames, matches, tag)
 		if !exists {
 			return &MissingParamError{Param: tag}
 		}
 
 		// 类型安全转换
-		if err := convertAndSet(field, paramValue); err != nil {
+		if err := c.convertAndSet(field, paramValue); err != nil {
 			return &ConversionError{
 				Field:  fieldType.Name,
 				Tag:    tag,
@@ -82,7 +82,7 @@ func BindPathParams(r *http.Request, pattern string, dest interface{}) error {
 }
 
 // 路径模式编译（增强版）
-func compilePattern(pattern string) (*regexp.Regexp, []string, error) {
+func (c *Context) compilePattern(pattern string) (*regexp.Regexp, []string, error) {
 	var paramNames []string
 	parts := strings.Split(pattern, "/")
 
@@ -112,7 +112,7 @@ func compilePattern(pattern string) (*regexp.Regexp, []string, error) {
 }
 
 // 辅助函数：构建参数映射
-func matchesMap(paramNames []string, matches []string, targetTag string) (string, bool) {
+func (c *Context) matchesMap(paramNames []string, matches []string, targetTag string) (string, bool) {
 	for i, name := range paramNames {
 		if name == targetTag {
 			if i+1 < len(matches) {
@@ -125,7 +125,7 @@ func matchesMap(paramNames []string, matches []string, targetTag string) (string
 }
 
 // 类型安全转换
-func convertAndSet(field reflect.Value, value string) error {
+func (c *Context) convertAndSet(field reflect.Value, value string) error {
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(value)
@@ -159,7 +159,7 @@ func convertAndSet(field reflect.Value, value string) error {
 	return nil
 }
 
-func buildParamMap(paramNames []string, matches []string) map[string]string {
+func (c *Context) buildParamMap(paramNames []string, matches []string) map[string]string {
 	paramMap := make(map[string]string)
 	for i, name := range paramNames {
 		if i+1 < len(matches) {
@@ -203,38 +203,31 @@ func (e *ConversionError) Error() string {
 		e.Field, e.Tag, e.Detail, e.Input)
 }
 
-// 辅助函数
-func paramValues(matches []string) []string {
-	values := make([]string, len(matches))
-	copy(values, matches[1:]) // 跳过全匹配组
-	return values
-}
-
 // 错误处理
-func HandleError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+func (c *Context) HandleError(err error) {
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(http.StatusBadRequest)
 
 	switch e := err.(type) {
 	case *PathMismatchError:
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		json.NewEncoder(c.Writer).Encode(map[string]interface{}{
 			"error":   "Path mismatch",
 			"details": e.ParamMap,
 		})
 	case *MissingParamError:
-		json.NewEncoder(w).Encode(map[string]string{
+		json.NewEncoder(c.Writer).Encode(map[string]string{
 			"error": "Missing parameter",
 			"param": e.Param,
 		})
 	case *ConversionError:
-		json.NewEncoder(w).Encode(map[string]string{
+		json.NewEncoder(c.Writer).Encode(map[string]string{
 			"error":    "Type conversion error",
 			"field":    e.Field,
 			"input":    e.Input,
 			"expected": e.Detail,
 		})
 	default:
-		json.NewEncoder(w).Encode(map[string]string{
+		json.NewEncoder(c.Writer).Encode(map[string]string{
 			"error": "Internal server error",
 		})
 	}
