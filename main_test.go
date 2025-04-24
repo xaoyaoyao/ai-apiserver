@@ -11,10 +11,10 @@ package main
 
 import (
 	"fmt"
+	req2 "github.com/volcengine/skd/internal/common/req"
+	"github.com/volcengine/skd/internal/common/resp"
 	"github.com/volcengine/skd/internal/config"
 	"github.com/volcengine/skd/internal/handler"
-	"github.com/volcengine/skd/internal/req"
-	"github.com/volcengine/skd/internal/resp"
 	"os"
 	"strconv"
 	"testing"
@@ -25,13 +25,13 @@ func init() {
 }
 
 func TestSyncPush(t *testing.T) {
-	var initImages []req.InitImage
-	initImage := req.InitImage{
+	var initImages []req2.InitImage
+	initImage := req2.InitImage{
 		Url: "https://static.vobase.com/images/20250420/2981745319285_.pic.jpg",
 	}
 	initImages = append(initImages, initImage)
 
-	syncPushReq := req.SyncPushReq{
+	syncPushReq := req2.SyncPushReq{
 		SyncTimeout: 30,
 		TaskType:    "mtlab",
 		InitImages:  initImages,
@@ -45,7 +45,7 @@ func TestSyncPush(t *testing.T) {
 
 func TestOverResolutionV2(t *testing.T) {
 	imageUrls := []string{"https://static.vobase.com/images/20250420/1411745296603_.pic.jpg"}
-	processRequest := req.ProcessReq{
+	processRequest := req2.ProcessReq{
 		ReqKey:    "lens_vida_nnsr",
 		ImageUrls: &imageUrls,
 	}
@@ -60,7 +60,7 @@ func TestEntitySegment(t *testing.T) {
 	maxEntity := 100
 	returnFormat := 4
 	refineMask := 1
-	processRequest := req.EntitySegmentReq{
+	processRequest := req2.EntitySegmentReq{
 		ReqKey:       "entity_seg",
 		ImageUrls:    &imageUrls,
 		MaxEntity:    &maxEntity,
@@ -76,7 +76,7 @@ func TestEntitySegment(t *testing.T) {
 func TestCVProcess(t *testing.T) {
 	imageUrls := []string{"https://static.vobase.com/images/20250420/1411745296603_.pic.jpg"}
 	//subReqKey := "img2img_comic_style_future"
-	processRequest := req.ProcessReq{
+	processRequest := req2.ProcessReq{
 		ReqKey: "img2img_ceramics_style_usage",
 		//SubReqKey: &subReqKey,
 		ImageUrls: &imageUrls,

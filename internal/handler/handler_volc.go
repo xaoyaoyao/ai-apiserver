@@ -11,17 +11,17 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/volcengine/skd/internal/action"
+	"github.com/volcengine/skd/internal/common/action"
+	req2 "github.com/volcengine/skd/internal/common/req"
+	"github.com/volcengine/skd/internal/common/resp"
+	"github.com/volcengine/skd/internal/common/util"
 	"github.com/volcengine/skd/internal/config"
-	"github.com/volcengine/skd/internal/req"
-	"github.com/volcengine/skd/internal/resp"
-	"github.com/volcengine/skd/internal/util"
-	"github.com/volcengine/skd/internal/volc"
+	"github.com/volcengine/skd/service/volc"
 	"net/url"
 )
 
-func Process(actionMethod action.VolcEngineAction, entitySegment *req.EntitySegmentReq,
-	processRequest *req.ProcessReq) (*resp.ProcessResponse, int, error) {
+func Process(actionMethod action.VolcEngineAction, entitySegment *req2.EntitySegmentReq,
+	processRequest *req2.ProcessReq) (*resp.ProcessResponse, int, error) {
 	if actionMethod == action.EntitySegment {
 		//entitySegment.ReqKey = "entity_seg"
 		processResponse, code, err := EntitySegment(*entitySegment)
@@ -38,15 +38,15 @@ func Process(actionMethod action.VolcEngineAction, entitySegment *req.EntitySegm
 	return &processResponse, code, err
 }
 
-func CVProcess(req req.ProcessReq) (resp.ProcessResponse, int, error) {
+func CVProcess(req req2.ProcessReq) (resp.ProcessResponse, int, error) {
 	return DoRequest(req, action.CVProcess, "POST")
 }
 
-func EntitySegment(req req.EntitySegmentReq) (resp.ProcessResponse, int, error) {
+func EntitySegment(req req2.EntitySegmentReq) (resp.ProcessResponse, int, error) {
 	return DoRequest(req, action.EntitySegment, "POST")
 }
 
-func OverResolutionV2(req req.ProcessReq) (resp.ProcessResponse, int, error) {
+func OverResolutionV2(req req2.ProcessReq) (resp.ProcessResponse, int, error) {
 	return DoRequest(req, action.OverResolutionV2, "POST")
 }
 

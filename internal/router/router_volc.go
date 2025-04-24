@@ -10,10 +10,10 @@
 package router
 
 import (
-	"github.com/volcengine/skd/internal/action"
+	"github.com/volcengine/skd/internal/common/action"
+	req2 "github.com/volcengine/skd/internal/common/req"
+	"github.com/volcengine/skd/internal/common/resp"
 	"github.com/volcengine/skd/internal/handler"
-	"github.com/volcengine/skd/internal/req"
-	"github.com/volcengine/skd/internal/resp"
 	"log"
 	"net/http"
 )
@@ -22,7 +22,7 @@ func ProcessVolcEngine(ctx *Context) {
 	actionMethod, _ := action.ToVolcEngineAction(ctx.Query("action"))
 
 	if actionMethod == action.EntitySegment {
-		var entitySegment req.EntitySegmentReq
+		var entitySegment req2.EntitySegmentReq
 		err := ctx.BindJSON(&entitySegment)
 		if err != nil {
 			log.Printf("[%s] %s %s| Error\n", ctx.Request.Method, ctx.Request.URL.Path, err.Error())
@@ -34,7 +34,7 @@ func ProcessVolcEngine(ctx *Context) {
 		return
 	}
 
-	var processRequest req.ProcessReq
+	var processRequest req2.ProcessReq
 	err := ctx.BindJSON(&processRequest)
 	if err != nil {
 		log.Printf("[%s] %s %s| Error\n", ctx.Request.Method, ctx.Request.URL.Path, err.Error())

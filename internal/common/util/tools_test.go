@@ -11,7 +11,7 @@ package util
 
 import (
 	"fmt"
-	"github.com/volcengine/skd/internal/req"
+	"github.com/volcengine/skd/internal/common/req"
 	"testing"
 )
 
