@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/volcengine/skd/internal/common/endpoint"
 	"github.com/volcengine/skd/internal/config"
 	"github.com/volcengine/skd/internal/middleware"
 	"github.com/volcengine/skd/internal/router"
@@ -22,20 +23,26 @@ func main() {
 	mux.Use(middleware.LoggerMiddleware)
 
 	// 路由分组示例
-	apiGroup := mux.Group("/api")
+	apiGroup := mux.Group(endpoint.ROOT_PATH)
 	{
 		// 分组级中间件（仅该分组生效）
-		apiGroup.Handle("GET", "/health", router.HealthCheck)
+		apiGroup.Handle(endpoint.METHOD_GET, endpoint.HEALTH_PATH, router.HealthCheck)
 	}
 
 	mux.Use(middleware.CorsMiddleware)
 	mux.Use(middleware.RecoveryMiddleware)
 
 	// 带认证的路由
-	authGroup := mux.Group("/api/ai", middleware.AuthMiddleware)
+	authGroup := mux.Group(endpoint.API_STSTEM_PATH, middleware.AuthMiddleware)
 	{
-		authGroup.Handle("POST", "/v1/volcengine", router.ProcessVolcEngine)
-		authGroup.Handle("POST", "/v1/meitu", router.ProcessMeitu)
+		authGroup.Handle(endpoint.METHOD_GET, endpoint.USERS_POSTS_PATH, router.ProcessUserPosts)
+	}
+
+	// 带认证的AI路由
+	aiGroup := mux.Group(endpoint.API_AI_PATH, middleware.AuthMiddleware)
+	{
+		aiGroup.Handle(endpoint.METHOD_POST, endpoint.VOLC_ENGINE_PATH, router.ProcessVolcEngine)
+		aiGroup.Handle(endpoint.METHOD_POST, endpoint.MEITU_PATH, router.ProcessMeitu)
 	}
 
 	// 启动服务器配置
