@@ -1,10 +1,10 @@
 /**
  * Package repo
- * @file      : path_parameter.go
+ * @file      : router_parameter.go
  * @author    : xaoyaoyao
  * @contact   : xaoyaoyao@aliyun.com
  * @version   : 1.0.0
- * @time      : 2025/4/24 12:47
+ * @time      : 2025/4/24 14:29
  **/
 
 package router
@@ -18,6 +18,60 @@ import (
 	"strconv"
 	"strings"
 )
+
+// Query 获取 URL 查询参数
+func (c *Context) Query(key string) string {
+	return c.Request.URL.Query().Get(key)
+}
+
+// PostForm 获取表单参数
+func (c *Context) PostForm(key string) (string, error) {
+	err := c.Request.ParseForm()
+	if err != nil {
+		return "", err
+	}
+	return c.Request.FormValue(key), nil
+}
+
+// BindJSON 解析 JSON 请求体
+func (c *Context) BindJSON(v interface{}) error {
+	defer c.Request.Body.Close()
+	return json.NewDecoder(c.Request.Body).Decode(v)
+}
+
+type Response struct {
+	Code    int         `json:"code"`
+	Data    interface{} `json:"data,omitempty"`
+	Message string      `json:"msg,omitempty"`
+}
+
+// JSON 返回 JSON 响应
+func (c *Context) JSON(statusCode int, data interface{}) {
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(statusCode)
+	json.NewEncoder(c.Writer).Encode(data)
+}
+
+// Error 返回错误响应
+func (c *Context) Error(statusCode int, message string) {
+	c.JSON(statusCode, map[string]string{"error": message})
+}
+
+func (c *Context) makeOK(data interface{}) {
+	c.JSON(http.StatusOK, c.makeData(http.StatusOK, "OK", data))
+}
+
+func (c *Context) makeData(code int, message string, data interface{}) Response {
+	return Response{
+		Code:    code,
+		Message: message,
+		Data:    data,
+	}
+}
+
+func (c *Context) makeError(statusCode int, data interface{}) {
+	c.JSON(statusCode, data)
+}
 
 // 绑定路径参数到结构体
 func (c *Context) BindPathParams(pattern string, dest interface{}) error {
