@@ -16,7 +16,7 @@ import (
 	"github.com/volcengine/skd/internal/common/resp"
 	"github.com/volcengine/skd/internal/common/util"
 	"github.com/volcengine/skd/internal/config"
-	"github.com/volcengine/skd/service/volc"
+	"github.com/volcengine/skd/internal/service/volc"
 	"net/url"
 )
 

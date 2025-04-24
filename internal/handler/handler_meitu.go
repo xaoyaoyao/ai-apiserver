@@ -12,7 +12,7 @@ package handler
 import (
 	"github.com/volcengine/skd/internal/common/req"
 	"github.com/volcengine/skd/internal/common/resp"
-	"github.com/volcengine/skd/service/meitu"
+	"github.com/volcengine/skd/internal/service/meitu"
 )
 
 func SyncPush(syncPushReq req.SyncPushReq) (*resp.SyncPushResp, error) {
